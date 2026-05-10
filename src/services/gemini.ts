@@ -1,6 +1,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
+let genAI: GoogleGenAI | null = null;
+
+function getAI() {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY || (import.meta.env.VITE_GEMINI_API_KEY as string);
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY가 설정되지 않았습니다. Vercel 환경 변수에 추가해주세요.");
+    }
+    genAI = new GoogleGenAI(apiKey);
+  }
+  return genAI;
+}
 
 export interface MathProblem {
   id: string;
@@ -26,6 +37,7 @@ export const generateMathProblems = async (params: {
   subUnit: string;
   count: number;
 }): Promise<MathProblem[]> => {
+  const ai = getAI();
   const prompt = `다음 조건에 맞는 수학 문제 ${params.count}개를 생성해주세요.
 대상: ${params.gradeLevel} (${params.semester})
 대단원: ${params.unit}
@@ -44,10 +56,9 @@ export const generateMathProblems = async (params: {
 
 문제는 수학적으로 정확해야 하며, 지정된 학년 수준과 난이도에 적합해야 합니다.`;
 
-  const response = await ai.models.generateContent({
+  const model = ai.getGenerativeModel({ 
     model: "gemini-1.5-flash",
-    contents: prompt,
-    config: {
+    generationConfig: {
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.ARRAY,
@@ -67,8 +78,11 @@ export const generateMathProblems = async (params: {
     },
   });
 
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  
   try {
-    const problems = JSON.parse(response.text);
+    const problems = JSON.parse(response.text());
     return problems.map((p: any, index: number) => ({
       ...p,
       id: p.id || `problem-${Date.now()}-${index}`,
