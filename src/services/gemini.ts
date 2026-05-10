@@ -45,7 +45,7 @@ export const generateMathProblems = async (params: {
 문제는 수학적으로 정확해야 하며, 지정된 학년 수준과 난이도에 적합해야 합니다.`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
+    model: "gemini-1.5-flash",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
