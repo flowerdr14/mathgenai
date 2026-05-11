@@ -61,7 +61,10 @@ export default function App() {
   const [mainUnit, setMainUnit] = useState("");
   const [subUnit, setSubUnit] = useState("");
   const [difficulty, setDifficulty] = useState(DIFFICULTIES[1]);
-  const [count, setCount] = useState(3);
+  const [count, setCount] = useState<number | "">(3);
+  const [worksheetTitle, setWorksheetTitle] = useState("");
+  const [worksheetSubtitle, setWorksheetSubtitle] = useState("");
+  const [studentName, setStudentName] = useState("");
   const [loading, setLoading] = useState(false);
   const [problems, setProblems] = useState<MathProblem[]>([]);
   const [customProblems, setCustomProblems] = useState<MathProblem[]>([]);
@@ -177,6 +180,13 @@ export default function App() {
     setLoading(true);
     setErrorMessage(null);
     try {
+      const generateCount = typeof count === "number" ? count : 3;
+      if (generateCount === 0) {
+        setErrorMessage("생성할 문항 수를 1개 이상으로 설정해주세요.");
+        setLoading(false);
+        return;
+      }
+
       const gpts = await generateMathProblems({
         topic: mainUnit,
         gradeLevel: `${schoolLevel} ${grade}`,
@@ -184,7 +194,7 @@ export default function App() {
         unit: mainUnit,
         subUnit: subUnit || mainUnit,
         difficulty,
-        count,
+        count: generateCount,
       });
       
       const newProblems = gpts.map(p => ({
@@ -326,7 +336,7 @@ export default function App() {
           </span>
         </div>
         <div className="hidden md:flex gap-6 text-sm font-medium text-slate-500">
-          <span className="flex h-16 items-center border-b-2 border-brand-600 text-brand-600 cursor-default">대시보드</span>
+          <span className="flex h-16 items-center border-b-2 border-brand-600 text-brand-600 cursor-default">문제생성</span>
         </div>
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
@@ -449,23 +459,52 @@ export default function App() {
               출력 옵션
             </label>
             <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-500">워크시트 제목</Label>
+                <Input 
+                  placeholder="예: 기말고사 대비 평가" 
+                  value={worksheetTitle} 
+                  onChange={(e) => setWorksheetTitle(e.target.value)}
+                  className="h-9 text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-500">워크시트 부제목</Label>
+                <Input 
+                  placeholder="예: 기본 학습 및 실전 응용" 
+                  value={worksheetSubtitle} 
+                  onChange={(e) => setWorksheetSubtitle(e.target.value)}
+                  className="h-9 text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-500">학생 이름 (선택사항)</Label>
+                <Input 
+                  placeholder="예: 홍길동" 
+                  value={studentName} 
+                  onChange={(e) => setStudentName(e.target.value)}
+                  className="h-9 text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">생성 문항 수 (1~100)</span>
+                <span className="text-xs font-medium">생성 문항 수 (0~100)</span>
                 <Input 
                   type="number" 
                   value={count} 
-                  onChange={(e) => setCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setCount("");
+                    } else {
+                      setCount(Math.min(100, Math.max(0, parseInt(val) || 0)));
+                    }
+                  }}
                   className="w-16 h-8 text-xs font-bold text-center bg-brand-50 border-none text-brand-700"
                 />
               </div>
-              <Slider 
-                value={[count]} 
-                min={1} 
-                max={100} 
-                step={1} 
-                onValueChange={(val) => setCount(val[0])} 
-                className="cursor-pointer"
-              />
             </div>
           </div>
 
@@ -533,17 +572,17 @@ export default function App() {
           </div>
         </aside>
 
-        <section className="flex flex-1 flex-col overflow-hidden bg-slate-50 p-6 lg:p-8">
+        <section className={`flex flex-1 flex-col overflow-hidden p-6 lg:p-8 ${theme === "dark" ? "bg-slate-950" : "bg-slate-50"}`}>
           <Tabs defaultValue="ai" className="flex flex-1 flex-col overflow-hidden">
             <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 no-print">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                  <LayoutDashboard className="h-6 w-6 text-brand-600" />
-                  학습 워크시트
+                <h2 className={`text-2xl font-bold flex items-center gap-2 ${theme === "dark" ? "text-slate-100" : "text-slate-900"}`}>
+                  <Sparkles className="h-6 w-6 text-brand-600" />
+                  문제생성 워크시트
                 </h2>
                 <p className="text-sm text-slate-500">커리큘럼에 기반한 최적화 문항입니다.</p>
               </div>
-              <TabsList className="bg-slate-200 shadow-inner p-1 no-print">
+              <TabsList className={`${theme === "dark" ? "bg-slate-800" : "bg-slate-200"} shadow-inner p-1 no-print`}>
                 <TabsTrigger value="ai" className="data-[state=active]:bg-white rounded-md px-6">AI 자동생성</TabsTrigger>
                 <TabsTrigger value="mine" className="data-[state=active]:bg-white rounded-md px-6">내가 만든 문제</TabsTrigger>
                 <TabsTrigger value="history" className="data-[state=active]:bg-white rounded-md px-6">히스토리</TabsTrigger>
@@ -578,8 +617,18 @@ export default function App() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-slate-900">{mainUnit || "연습 문제"}</p>
-                      <p className="text-sm italic text-slate-500">{subUnit || "기본 학습"}</p>
+                      <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{worksheetTitle || mainUnit || "연습 문제"}</p>
+                      <div className="flex flex-col items-end gap-1 mt-1">
+                        <p className="text-sm italic text-slate-500">{worksheetSubtitle || subUnit || "기본 학습"}</p>
+                        {studentName && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student:</span>
+                            <span className="px-3 py-0.5 bg-slate-100 dark:bg-slate-800 border b-slate-200 dark:border-slate-700 rounded-full text-xs font-bold text-slate-700 dark:text-slate-300">
+                              {studentName}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
