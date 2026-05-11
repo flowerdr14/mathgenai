@@ -232,8 +232,8 @@ export default function App() {
       let msg = error.message || "문제 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
       
       // If error message indicates API key issue
-      if (msg.includes("API key not valid") || msg.includes("INVALID_ARGUMENT")) {
-        msg = "API 키가 올바르지 않습니다. AI Studio 플랫폼 설정에서 API 키가 올바르게 설정되었는지 확인하시거나, 유효한 API 키가 할당되었는지 확인해주세요.";
+      if (msg.includes("API key not valid") || msg.includes("INVALID_ARGUMENT") || msg.includes("400") || msg.includes("API key")) {
+        msg = "AI 모델 연결에 문제가 발생했습니다. API 키가 유효한지 확인하시거나 잠시 후 다시 시도해주세요.";
       }
       
       setErrorMessage(msg);
@@ -332,7 +332,7 @@ export default function App() {
   };
 
   return (
-    <div className={`flex h-screen w-full flex-col font-sans ${theme === "dark" ? "bg-slate-950 text-slate-50 dark" : "bg-slate-100 text-slate-900"} overflow-hidden`}>
+    <div className={`flex h-screen w-full flex-col font-sans ${theme === "dark" ? "bg-slate-950 text-slate-100 dark" : "bg-slate-100 text-slate-900"} overflow-hidden`}>
       <nav className={`h-16 flex-shrink-0 border-b px-8 flex items-center justify-between no-print ${theme === "dark" ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"}`}>
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-brand-600">
@@ -346,8 +346,8 @@ export default function App() {
           <span className="flex h-16 items-center border-b-2 border-brand-600 text-brand-600 cursor-default">문제생성</span>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
-            {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+            {theme === "light" ? <Moon className="h-5 w-5 text-slate-600" /> : <Sun className="h-5 w-5 text-yellow-400" />}
           </Button>
           <div className="text-right hidden sm:block">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PLUS PRO 3.1</p>
@@ -369,10 +369,10 @@ export default function App() {
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-slate-500">학교급</Label>
                 <Select value={schoolLevel} onValueChange={setSchoolLevel}>
-                  <SelectTrigger className="w-full border-slate-200 bg-slate-50 h-9 p-2 text-sm hover:bg-slate-100 transition-colors">
+                  <SelectTrigger className="w-full border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 h-9 p-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                     <SelectValue placeholder="학교 선택" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-slate-900 dark:border-slate-800">
                     {schoolLevels.map((s) => (
                       <SelectItem key={s} value={s}>{s}</SelectItem>
                     ))}
@@ -384,10 +384,10 @@ export default function App() {
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-slate-500">학년</Label>
                   <Select value={grade} onValueChange={setGrade}>
-                    <SelectTrigger className="w-full border-slate-200 bg-slate-50 h-9 p-2 text-sm hover:bg-slate-100 transition-colors">
+                    <SelectTrigger className="w-full border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 h-9 p-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                       <SelectValue placeholder="학년" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="dark:bg-slate-900 dark:border-slate-800">
                       {grades.map((g) => (
                         <SelectItem key={g} value={g}>{g}</SelectItem>
                       ))}
@@ -397,10 +397,10 @@ export default function App() {
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-slate-500">학기/분류</Label>
                   <Select value={semester} onValueChange={setSemester}>
-                    <SelectTrigger className="w-full border-slate-200 bg-slate-50 h-9 p-2 text-sm hover:bg-slate-100 transition-colors">
+                    <SelectTrigger className="w-full border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 h-9 p-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                       <SelectValue placeholder="학기" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="dark:bg-slate-900 dark:border-slate-800">
                       {semesters.map((s) => (
                         <SelectItem key={s} value={s}>{s}</SelectItem>
                       ))}
@@ -412,10 +412,10 @@ export default function App() {
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-slate-500">대단원</Label>
                 <Select value={mainUnit} onValueChange={setMainUnit}>
-                  <SelectTrigger className="w-full border-slate-200 bg-slate-50 h-9 p-2 text-sm hover:bg-slate-100 transition-colors">
+                  <SelectTrigger className="w-full border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 h-9 p-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                     <SelectValue placeholder="대단원 선택" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-slate-900 dark:border-slate-800">
                     {mainUnits.map((u) => (
                       <SelectItem key={u.name} value={u.name}>{u.name}</SelectItem>
                     ))}
@@ -426,10 +426,10 @@ export default function App() {
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-slate-500">소단원</Label>
                 <Select value={subUnit} onValueChange={setSubUnit}>
-                  <SelectTrigger className="w-full border-slate-200 bg-slate-50 h-9 p-2 text-sm hover:bg-slate-100 transition-colors">
+                  <SelectTrigger className="w-full border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 h-9 p-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                     <SelectValue placeholder="소단원 선택" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-slate-900 dark:border-slate-800">
                     {subUnits.map((su) => (
                       <SelectItem key={su} value={su}>{su}</SelectItem>
                     ))}
@@ -439,7 +439,7 @@ export default function App() {
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-slate-500">목표 난이도</Label>
-                <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+                <div className={`flex gap-1 rounded-lg p-1 ${theme === "dark" ? "bg-slate-800" : "bg-slate-100"}`}>
                   {DIFFICULTIES.map((d) => {
                     const isSelected = d === difficulty;
                     return (
@@ -448,8 +448,8 @@ export default function App() {
                         onClick={() => setDifficulty(d)}
                         className={`flex-1 rounded py-1.5 text-[10px] font-bold transition-all ${
                           isSelected 
-                            ? "bg-white text-slate-900 shadow-sm border border-slate-100" 
-                            : "text-slate-500 hover:text-slate-700"
+                            ? (theme === "dark" ? "bg-brand-600 text-white shadow-sm" : "bg-white text-slate-900 shadow-sm border border-slate-100")
+                            : (theme === "dark" ? "text-slate-400 hover:text-slate-100" : "text-slate-500 hover:text-slate-700")
                         }`}
                       >
                         {d}
