@@ -68,6 +68,7 @@ export default function App() {
   const [revealedSolutions, setRevealedSolutions] = useState<Record<string, boolean>>({});
   const [history, setHistory] = useState<WorksheetHistory[]>([]);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   // Worksheet history type
   interface WorksheetHistory {
@@ -174,6 +175,7 @@ export default function App() {
 
   const handleGenerate = async () => {
     setLoading(true);
+    setErrorMessage(null);
     try {
       const gpts = await generateMathProblems({
         topic: mainUnit,
@@ -215,8 +217,9 @@ export default function App() {
       const updatedHistory = [newHistoryItem, ...history];
       setHistory(updatedHistory);
       saveHistoryToLocal(updatedHistory);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      setErrorMessage(error.message || "문제 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setLoading(false);
     }
@@ -315,15 +318,15 @@ export default function App() {
     <div className={`flex h-screen w-full flex-col font-sans ${theme === "dark" ? "bg-slate-950 text-slate-50 dark" : "bg-slate-100 text-slate-900"} overflow-hidden`}>
       <nav className={`h-16 flex-shrink-0 border-b px-8 flex items-center justify-between no-print ${theme === "dark" ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"}`}>
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-indigo-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-brand-600">
             <div className="h-4 w-4 rotate-45 border-2 border-white"></div>
           </div>
           <span className="text-xl font-bold tracking-tight uppercase">
-            MATH<span className="text-indigo-600">GEN</span> AI 3.1
+            MATH<span className="text-brand-600">GEN</span> AI 3.1
           </span>
         </div>
         <div className="hidden md:flex gap-6 text-sm font-medium text-slate-500">
-          <span className="flex h-16 items-center border-b-2 border-indigo-600 text-indigo-600 cursor-default">대시보드</span>
+          <span className="flex h-16 items-center border-b-2 border-brand-600 text-brand-600 cursor-default">대시보드</span>
         </div>
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
@@ -452,7 +455,7 @@ export default function App() {
                   type="number" 
                   value={count} 
                   onChange={(e) => setCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
-                  className="w-16 h-8 text-xs font-bold text-center bg-indigo-50 border-none text-indigo-700"
+                  className="w-16 h-8 text-xs font-bold text-center bg-brand-50 border-none text-brand-700"
                 />
               </div>
               <Slider 
@@ -514,7 +517,7 @@ export default function App() {
              </div>
 
             <Button 
-              className="h-14 w-full rounded-xl bg-indigo-600 text-[13px] font-bold text-white shadow-lg shadow-indigo-100 transition-all hover:bg-indigo-700 active:scale-[0.98]" 
+              className="h-14 w-full rounded-xl bg-brand-600 text-[13px] font-bold text-white shadow-lg shadow-brand-100 transition-all hover:bg-brand-700 active:scale-[0.98]" 
               onClick={handleGenerate}
               disabled={loading}
             >
@@ -535,7 +538,7 @@ export default function App() {
             <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 no-print">
               <div>
                 <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                  <LayoutDashboard className="h-6 w-6 text-indigo-600" />
+                  <LayoutDashboard className="h-6 w-6 text-brand-600" />
                   학습 워크시트
                 </h2>
                 <p className="text-sm text-slate-500">커리큘럼에 기반한 최적화 문항입니다.</p>
@@ -556,6 +559,13 @@ export default function App() {
                 </Button>
               </div>
             </div>
+
+            {errorMessage && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm font-medium flex items-center gap-2 no-print">
+                <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                {errorMessage}
+              </div>
+            )}
 
             <TabsContent value="ai" className="flex-1 overflow-hidden m-0">
               <ScrollArea className="h-full pr-4 pb-20">
@@ -593,7 +603,7 @@ export default function App() {
                                    className="space-y-4"
                                  >
                                    <div className="flex gap-3 font-bold text-slate-800 dark:text-slate-200">
-                                     <span className="text-indigo-600">Q{index + 1}.</span>
+                                     <span className="text-brand-600">Q{index + 1}.</span>
                                      <div className="flex-1 leading-relaxed">
                                        <div className="math-render">
                                          <ReactMarkdown
@@ -615,7 +625,7 @@ export default function App() {
                                        <div className="flex justify-start gap-4">
                                          <button 
                                            onClick={() => toggleSolution(problem.id)}
-                                           className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 hover:text-indigo-700 flex items-center gap-1.5 transition-colors bg-indigo-50 px-2 py-1 rounded"
+                                           className="text-[10px] font-bold uppercase tracking-widest text-brand-600 hover:text-brand-700 flex items-center gap-1.5 transition-colors bg-brand-50 px-2 py-1 rounded"
                                          >
                                            {revealedSolutions[problem.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                                            {revealedSolutions[problem.id] ? "해설 닫기" : "정답 및 해설 열기"}
@@ -642,9 +652,9 @@ export default function App() {
                                          <motion.div
                                            initial={{ opacity: 0, height: 0 }}
                                            animate={{ opacity: 1, height: "auto" }}
-                                           className="rounded-sm bg-slate-100/50 p-6 border-l-4 border-indigo-600 overflow-hidden"
+                                           className="rounded-sm bg-slate-100/50 p-6 border-l-4 border-brand-600 overflow-hidden"
                                          >
-                                           <p className="text-[10px] font-bold text-indigo-700 mb-3 uppercase tracking-widest">Model Solution</p>
+                                           <p className="text-[10px] font-bold text-brand-700 mb-3 uppercase tracking-widest">Model Solution</p>
                                            <div className="text-sm prose prose-sm prose-slate max-w-none leading-relaxed">
                                              <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                                                {`**정답:** ${problem.solution}\n\n**풀이:** ${problem.explanation}`}
@@ -681,7 +691,7 @@ export default function App() {
                        <CardHeader className="bg-slate-50 border-b border-slate-100 flex flex-row items-center justify-between">
                           <div className="space-y-1">
                              <CardTitle className="text-lg flex items-center gap-2">
-                                <ClipboardList className="h-5 w-5 text-indigo-600" />
+                                <ClipboardList className="h-5 w-5 text-brand-600" />
                                 개인 문항 저장소 (최대 150개)
                              </CardTitle>
                              <CardDescription className="text-xs">등록된 {customProblems.length}/150개의 문항이 있습니다.</CardDescription>
@@ -690,7 +700,7 @@ export default function App() {
                        <CardContent className="pt-6 space-y-6">
                             {customProblems.length > 0 ? (
                                customProblems.map((problem, idx) => (
-                                  <div key={problem.id} className="p-6 rounded-sm border border-slate-100 dark:border-slate-800 hover:border-indigo-200 transition-all group bg-slate-50/30 dark:bg-slate-900/30 mb-4">
+                                  <div key={problem.id} className="p-6 rounded-sm border border-slate-100 dark:border-slate-800 hover:border-brand-200 transition-all group bg-slate-50/30 dark:bg-slate-900/30 mb-4">
                                      <div className="flex items-start justify-between mb-4">
                                         <div className="flex-1">
                                            <div className="flex items-center gap-2 mb-3">
@@ -731,7 +741,7 @@ export default function App() {
                                      <div className="no-print">
                                        <Accordion className="w-full">
                                          <AccordionItem value="solution" className="border-none">
-                                           <AccordionTrigger className="py-2 text-[10px] font-bold text-indigo-600 hover:no-underline uppercase tracking-[0.2em] bg-white px-3 rounded-sm border border-slate-100 shadow-sm">
+                                           <AccordionTrigger className="py-2 text-[10px] font-bold text-brand-600 hover:no-underline uppercase tracking-[0.2em] bg-white px-3 rounded-sm border border-slate-100 shadow-sm">
                                              정답 확인하기
                                            </AccordionTrigger>
                                            <AccordionContent className="pt-4 text-sm text-slate-600">
@@ -771,8 +781,8 @@ export default function App() {
                          <Card key={item.id} className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all overflow-hidden">
                            <CardContent className="p-4 flex items-center justify-between">
                              <div className="flex items-center gap-4">
-                               <div className="bg-indigo-50 dark:bg-indigo-950 p-2 rounded-lg">
-                                 <History className="h-5 w-5 text-indigo-600" />
+                               <div className="bg-brand-50 dark:bg-brand-950 p-2 rounded-lg">
+                                 <History className="h-5 w-5 text-brand-600" />
                                </div>
                                <div>
                                  <div className="flex items-center gap-2 mb-1">
