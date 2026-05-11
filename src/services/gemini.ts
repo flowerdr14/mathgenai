@@ -1,7 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 export interface MathProblem {
   id: string;
   question: string;
@@ -26,6 +24,14 @@ export const generateMathProblems = async (params: {
   subUnit: string;
   count: number;
 }): Promise<MathProblem[]> => {
+  // Lazy initialization to ensure we get the latest API key if using key selection
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY가 설정되지 않았습니다. 설정 메뉴에서 API 키를 확인해주세요.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+
   const prompt = `다음 조건에 맞는 수학 문제 ${params.count}개를 생성해주세요.
 대상: ${params.gradeLevel} (${params.semester})
 대단원: ${params.unit}
@@ -46,7 +52,7 @@ export const generateMathProblems = async (params: {
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-flash-latest", // Use alias as per skill
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -78,6 +84,7 @@ export const generateMathProblems = async (params: {
     }));
   } catch (error: any) {
     console.error("Gemini API Error:", error);
-    throw new Error("문제 생성에 실패했습니다. 다시 시도해주세요. (" + (error.message || "Unknown error") + ")");
+    // Be careful with error parsing if it's already a JSON string from previous handler but here it's caught
+    throw error;
   }
 };

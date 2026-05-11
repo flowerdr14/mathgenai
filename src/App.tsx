@@ -180,8 +180,8 @@ export default function App() {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const generateCount = typeof count === "number" ? count : 3;
-      if (generateCount === 0) {
+      const generateCount = typeof count === "number" ? count : 0;
+      if (generateCount <= 0) {
         setErrorMessage("생성할 문항 수를 1개 이상으로 설정해주세요.");
         setLoading(false);
         return;
@@ -229,7 +229,14 @@ export default function App() {
       saveHistoryToLocal(updatedHistory);
     } catch (error: any) {
       console.error(error);
-      setErrorMessage(error.message || "문제 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      let msg = error.message || "문제 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+      
+      // If error message indicates API key issue
+      if (msg.includes("API key not valid") || msg.includes("INVALID_ARGUMENT")) {
+        msg = "API 키가 올바르지 않습니다. AI Studio 플랫폼 설정에서 API 키가 올바르게 설정되었는지 확인하시거나, 유효한 API 키가 할당되었는지 확인해주세요.";
+      }
+      
+      setErrorMessage(msg);
     } finally {
       setLoading(false);
     }
@@ -582,10 +589,10 @@ export default function App() {
                 </h2>
                 <p className="text-sm text-slate-500">커리큘럼에 기반한 최적화 문항입니다.</p>
               </div>
-              <TabsList className={`${theme === "dark" ? "bg-slate-800" : "bg-slate-200"} shadow-inner p-1 no-print`}>
-                <TabsTrigger value="ai" className="data-[state=active]:bg-white rounded-md px-6">AI 자동생성</TabsTrigger>
-                <TabsTrigger value="mine" className="data-[state=active]:bg-white rounded-md px-6">내가 만든 문제</TabsTrigger>
-                <TabsTrigger value="history" className="data-[state=active]:bg-white rounded-md px-6">히스토리</TabsTrigger>
+            <TabsList className={`${theme === "dark" ? "bg-slate-800" : "bg-slate-200"} shadow-inner p-1 no-print`}>
+                <TabsTrigger value="ai" className={`rounded-md px-6 ${theme === "dark" ? "data-[state=active]:bg-slate-700 text-slate-400" : "data-[state=active]:bg-white"}`}>AI 자동생성</TabsTrigger>
+                <TabsTrigger value="mine" className={`rounded-md px-6 ${theme === "dark" ? "data-[state=active]:bg-slate-700 text-slate-400" : "data-[state=active]:bg-white"}`}>내가 만든 문제</TabsTrigger>
+                <TabsTrigger value="history" className={`rounded-md px-6 ${theme === "dark" ? "data-[state=active]:bg-slate-700 text-slate-400" : "data-[state=active]:bg-white"}`}>히스토리</TabsTrigger>
               </TabsList>
               <div className="flex gap-2 no-print">
                 <Button variant="outline" size="sm" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 font-semibold" 
@@ -638,10 +645,10 @@ export default function App() {
                         {Object.entries(groupedProblems).map(([diff, diffProblems]) => (
                           <div key={diff} className="space-y-8">
                              <div className="flex items-center gap-4">
-                                <Badge variant="secondary" className="bg-slate-100 text-slate-600 rounded-sm font-bold uppercase tracking-wider px-3">
+                                <Badge variant="secondary" className={`${theme === "dark" ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-600"} rounded-sm font-bold uppercase tracking-wider px-3`}>
                                    지정 난이도: {diff}
                                 </Badge>
-                                <div className="h-px flex-1 bg-slate-100" />
+                                <div className={`h-px flex-1 ${theme === "dark" ? "bg-slate-800" : "bg-slate-100"}`} />
                              </div>
                              <div className="grid grid-cols-1 gap-y-12">
                                {diffProblems.map((problem, index) => (
@@ -667,7 +674,7 @@ export default function App() {
 
                                    <div className="no-print">
                                      <div className="flex flex-col gap-4">
-                                       <div className="bg-slate-50/50 p-8 rounded-sm border border-slate-100 min-h-[120px] flex items-center justify-center border-dashed">
+                                       <div className={`bg-slate-50/50 dark:bg-slate-800/20 p-8 rounded-sm border border-slate-100 dark:border-slate-800 min-h-[120px] flex items-center justify-center border-dashed`}>
                                          <span className="text-slate-300 text-[10px] font-bold uppercase tracking-[0.2em]">Solution Space</span>
                                        </div>
 
@@ -790,14 +797,14 @@ export default function App() {
                                      <div className="no-print">
                                        <Accordion className="w-full">
                                          <AccordionItem value="solution" className="border-none">
-                                           <AccordionTrigger className="py-2 text-[10px] font-bold text-brand-600 hover:no-underline uppercase tracking-[0.2em] bg-white px-3 rounded-sm border border-slate-100 shadow-sm">
+                                           <AccordionTrigger className={`py-2 text-[10px] font-bold text-brand-600 hover:no-underline uppercase tracking-[0.2em] px-3 rounded-sm border shadow-sm ${theme === "dark" ? "bg-slate-800 border-slate-700" : "bg-white border-slate-100"}`}>
                                              정답 확인하기
                                            </AccordionTrigger>
                                            <AccordionContent className="pt-4 text-sm text-slate-600">
-                                             <div className="bg-white p-6 rounded-sm border border-slate-200 shadow-inner">
-                                               <p className="font-bold text-slate-900 border-b pb-2 mb-4">정답: {problem.solution}</p>
+                                             <div className={`p-6 rounded-sm border shadow-inner ${theme === "dark" ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
+                                               <p className={`font-bold border-b pb-2 mb-4 ${theme === "dark" ? "text-slate-100 border-slate-700" : "text-slate-900 border-slate-200"}`}>정답: {problem.solution}</p>
                                                {problem.explanation && (
-                                                 <div className="prose prose-sm max-w-none text-slate-500 italic">
+                                                 <div className={`prose prose-sm max-w-none italic ${theme === "dark" ? "text-slate-400" : "text-slate-500"}`}>
                                                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                                                      {problem.explanation}
                                                    </ReactMarkdown>
